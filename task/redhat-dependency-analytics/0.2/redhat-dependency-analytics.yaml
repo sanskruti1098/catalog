@@ -9,8 +9,7 @@ metadata:
     tekton.dev/pipelines.minVersion: "0.37.5"
     tekton.dev/tags: Security, Vulnenrability, CVE
     tekton.dev/displayName: "Red Hat Dependency Analytics"
-    tekton.dev/platforms: "linux/amd64"
-    tekton.dev/deprecated: "true"
+    tekton.dev/platforms: "linux/ppc64le"
 spec:
   description: >-
     The Red Hat Dependency Analytics task is an interface between Tekton and Red Hat Dependency Analytics (RHDA) platform.
@@ -26,7 +25,7 @@ spec:
       default: redhat-dependency-analytics-report.json
     - name: rhda-image
       description: Image where Exhort Javascript API and required dependencies are installed.
-      default: quay.io/ecosystem-appeng/exhort-javascript-api:0.1.1-ea.26
+      default: na.artifactory.swg-devops.com/sys-linux-power-team-ftp3distro-docker-images-docker-local/tekton/rdha:latest
     - name: python-image
       description: Image with installed Python interpreter and associated tools (such as pip, pip3, etc.).
       default: python:3.11
