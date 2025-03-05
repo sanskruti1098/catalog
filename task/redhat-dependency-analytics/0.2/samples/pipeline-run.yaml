@@ -25,7 +25,7 @@ spec:
       value: redhat-dependency-analytics-report.json
     # Replace with base image where Exhort Javascript API and required dependencies are installed.
     - name: rhda-image
-      value: quay.io/ecosystem-appeng/exhort-javascript-api:0.1.1-ea.26
+      value: na.artifactory.swg-devops.com/sys-linux-power-team-ftp3distro-docker-images-docker-local/tekton/rdha:latest
     # Replace with base image including the desired Python version.
     - name: python-image
       value: python:3.11
