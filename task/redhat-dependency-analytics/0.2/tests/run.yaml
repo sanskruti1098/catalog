@@ -62,7 +62,7 @@ spec:
     - name: output-file-path
       value: redhat-dependency-analytics-report.json
     - name: rhda-image
-      value: quay.io/ecosystem-appeng/exhort-javascript-api:0.1.1-ea.26
+      value: na.artifactory.swg-devops.com/sys-linux-power-team-ftp3distro-docker-images-docker-local/tekton/rdha:latest
     - name: python-image
       value: docker.io/library/python@sha256:61d662f6d52206ab2290af4258257b5369573b6a4bbd904896699cc909221334
     - name: use-go-mvs-logic
