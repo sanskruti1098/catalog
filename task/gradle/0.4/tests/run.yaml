@@ -81,5 +81,5 @@ spec:
       persistentVolumeClaim:
         claimName: gradle-source-pvc
     - name: gradle-config
-      configmap:
+      configMap:
         name: gradle-config
