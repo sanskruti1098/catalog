@@ -5,8 +5,8 @@ metadata:
   name: test-mvn-results
 spec:
   params:
-  - name: input
-    type: string
+    - name: input
+      type: string
   steps:
     - name: verify
       image: registry.access.redhat.com/ubi8/ubi-minimal:8.2
@@ -84,7 +84,10 @@ spec:
         - maven-run-build-2
       params:
         - name: input
-          value: $(tasks.maven-run-build-2.results.group-id) $(tasks.maven-run-build-2.results.artifact-id) $(tasks.maven-run-build-2.results.version)
+          value: |
+            Group ID: $(tasks.maven-run-build-2.results.group-id)
+            Artifact ID: $(tasks.maven-run-build-2.results.artifact-id)
+            Version: $(tasks.maven-run-build-2.results.version)
 ---
 apiVersion: tekton.dev/v1
 kind: PipelineRun
