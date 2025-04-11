@@ -5,8 +5,8 @@ metadata:
   name: test-mvn-results
 spec:
   params:
-    - name: input
-      type: string
+  - name: input
+    type: string
   steps:
     - name: verify
       image: registry.access.redhat.com/ubi8/ubi-minimal:8.2
@@ -77,10 +77,6 @@ spec:
           workspace: shared-workspace
         - name: maven-local-repo
           workspace: maven-local-m2
-      results:
-        - name: group-id
-        - name: artifact-id
-        - name: version
     - name: verify-mvn-results
       taskRef:
         name: test-mvn-results
