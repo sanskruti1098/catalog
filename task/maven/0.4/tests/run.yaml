@@ -84,7 +84,7 @@ spec:
         - maven-run-build-2
       params:
         - name: input
-          value: $(tasks.maven-run-build-2.group-id) $(tasks.maven-run-build-2.artifact-id) $(tasks.maven-run-build-2.version)
+          value: $(tasks.maven-run-build-2.results.group-id) $(tasks.maven-run-build-2.results.artifact-id) $(tasks.maven-run-build-2.results.version)
 ---
 apiVersion: tekton.dev/v1
 kind: PipelineRun
