@@ -12,6 +12,7 @@ spec:
       image: registry.access.redhat.com/ubi8/ubi-minimal:8.2
       script: |
         #!/bin/bash
+        echo "Maven Task Results:"
         echo "$(params.input)"
 ---
 apiVersion: tekton.dev/v1
@@ -97,11 +98,10 @@ spec:
   pipelineRef:
     name: maven-test-pipeline
   workspaces:
-    - name: maven-settings
-      emptyDir: {}
     - name: shared-workspace
       persistentVolumeClaim:
         claimName: maven-source-pvc
+    - name: maven-settings
+      emptyDir: {}                   # Safe: config file only
     - name: maven-local-m2
-      persistentVolumeClaim:
-        claimName: maven-local-m2-pvc
+      emptyDir: {}                   # using emptyDir avoids PVC conflict
