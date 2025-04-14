@@ -98,10 +98,11 @@ spec:
   pipelineRef:
     name: maven-test-pipeline
   workspaces:
+    - name: maven-settings
+      emptyDir: {}
     - name: shared-workspace
       persistentVolumeClaim:
         claimName: maven-source-pvc
-    - name: maven-settings
-      emptyDir: {}                   # Safe: config file only
     - name: maven-local-m2
-      emptyDir: {}                   # using emptyDir avoids PVC conflict
+      persistentVolumeClaim:
+        claimName: maven-local-m2-pvc
