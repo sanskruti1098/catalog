@@ -14,6 +14,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+echo "Patch to Disable Affinity Assistant (Needed to allow binding of two PVCs for Maven-0-3 test)"
+kubectl patch cm feature-flags -n tekton-pipelines -p '{"data":{"disable-affinity-assistant":"true"}}'
+
+# Restart Tekton pods so it picks up changes
+echo "Restarting pods"
+kubectl rollout restart deployment tekton-pipelines-controller -n tekton-pipelines
+kubectl rollout restart deployment tekton-pipelines-webhook -n tekton-pipelines
+
+echo "1 min please.... taking a nap ;)"
+sleep 60
+
+echo "Refreshed.."
+
+$val=kubectl get cm feature-flags -n tekton-pipelines -o yaml | grep disable-affinity-assistant
+echo "$val"
+
 # ppc64le specific registry
 export REGISTRY_IMAGE=ibmcom/registry:2.6.2.5
 # Maven image to use for ppc64le maven tasks
@@ -46,7 +62,3 @@ yq eval '(..|select(.kind?=="Pipeline")|select(.metadata.name?=="jib-maven-test-
 
 echo "Patch to Enable Step Actions on the cluster"
 kubectl patch cm feature-flags -n tekton-pipelines -p '{"data":{"enable-step-actions":"true"}}'
-
-echo "Patch to Disable Affinity Assistant (Needed to allow binding of two PVCs for Maven-0-3 test)"
-kubectl patch cm feature-flags -n tekton-pipelines -p '{"data":{"disable-affinity-assistant":"true"}}'
-
