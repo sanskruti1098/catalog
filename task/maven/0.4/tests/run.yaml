@@ -105,4 +105,5 @@ spec:
         claimName: maven-source-pvc
     - name: maven-local-m2
       persistentVolumeClaim:
-        claimName: maven-local-m2-pvc
+        claimName: maven-local-m2-pvc-2  # NEW PVC!
+
