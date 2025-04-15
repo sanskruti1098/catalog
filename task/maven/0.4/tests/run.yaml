@@ -77,7 +77,7 @@ spec:
         - name: source
           workspace: shared-workspace
         - name: maven-local-repo
-          workspace: maven-local-m2
+          workspace: maven-local-m2-alt  # <== using different workspace name
     - name: verify-mvn-results
       taskRef:
         name: test-mvn-results
@@ -105,5 +105,7 @@ spec:
         claimName: maven-source-pvc
     - name: maven-local-m2
       persistentVolumeClaim:
-        claimName: maven-local-m2-pvc-2  # NEW PVC!
-
+        claimName: maven-local-m2-pvc
+    - name: maven-local-m2-alt
+      persistentVolumeClaim:
+        claimName: maven-local-m2-pvc-2
