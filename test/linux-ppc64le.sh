@@ -24,11 +24,9 @@ kubectl rollout restart deployment tekton-pipelines-webhook -n tekton-pipelines
 
 echo "1 min please.... taking a nap ;)"
 sleep 60
-
 echo "Refreshed.."
 
-$val=kubectl get cm feature-flags -n tekton-pipelines -o yaml | grep disable-affinity-assistant
-echo "$val"
+kubectl get cm feature-flags -n tekton-pipelines -o yaml | grep disable-affinity-assistant
 
 # ppc64le specific registry
 export REGISTRY_IMAGE=ibmcom/registry:2.6.2.5
