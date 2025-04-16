@@ -24,6 +24,7 @@ spec:
     - name: shared-workspace
     - name: maven-settings
     - name: maven-local-m2
+    - name: maven-local-m2-alt
   tasks:
     - name: fetch-repository
       taskRef:
