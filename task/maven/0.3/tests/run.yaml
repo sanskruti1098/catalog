@@ -1,5 +1,5 @@
 ---
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
   name: maven-test-pipeline
@@ -63,7 +63,7 @@ spec:
         - name: maven-local-repo
           workspace: maven-local-m2
 ---
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: PipelineRun
 metadata:
   name: maven-test-pipeline-run
