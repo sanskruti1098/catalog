@@ -1,5 +1,20 @@
 ---
 apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: test-mvn-results
+spec:
+  params:
+  - name: input
+    type: string
+  steps:
+    - name: verify
+      image: registry.access.redhat.com/ubi8/ubi-minimal:8.2
+      script: |
+        #!/bin/bash
+        echo "$(params.input)"
+---
+apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
   name: maven-test-pipeline
@@ -7,7 +22,7 @@ spec:
   workspaces:
     - name: shared-workspace
     - name: maven-settings
-  params: []
+    - name: maven-local-m2
   tasks:
     - name: fetch-repository
       taskRef:
@@ -22,61 +37,54 @@ spec:
           value: ""
         - name: deleteExisting
           value: "true"
-
     - name: maven-run-build-1
+      taskRef:
+        name: maven
       runAfter:
         - fetch-repository
-      taskRef:
-        name: maven
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-        - name: maven-settings
-          workspace: maven-settings
       params:
         - name: CONTEXT_DIR
-          value: apps/greeter/java/quarkus
+          value: "apps/greeter/java/quarkus"
         - name: GOALS
           value:
             - -DskipTests
             - clean
             - package
-        - name: SUBPATH
-          value: build1-cache
-
+      workspaces:
+        - name: maven-settings
+          workspace: maven-settings
+        - name: source
+          workspace: shared-workspace
+        - name: maven-local-repo
+          workspace: maven-local-m2
     - name: maven-run-build-2
+      taskRef:
+        name: maven
       runAfter:
         - maven-run-build-1
-      taskRef:
-        name: maven
-      workspaces:
-        - name: source
-          workspace: shared-workspace
-        - name: maven-settings
-          workspace: maven-settings
       params:
         - name: CONTEXT_DIR
-          value: apps/greeter/java/quarkus
+          value: "apps/greeter/java/quarkus"
         - name: GOALS
           value:
             - -DskipTests
             - clean
             - package
-        - name: SUBPATH
-          value: build2-cache
-
+      workspaces:
+        - name: maven-settings
+          workspace: maven-settings
+        - name: source
+          workspace: shared-workspace
+        - name: maven-local-repo
+          workspace: maven-local-m2
     - name: verify-mvn-results
-      runAfter:
-        - maven-run-build-2
       taskRef:
         name: test-mvn-results
+      runAfter:
+        - maven-run-build-2
       params:
         - name: input
-          value: |
-            Group ID: $(tasks.maven-run-build-2.results.group-id)
-            Artifact ID: $(tasks.maven-run-build-2.results.artifact-id)
-            Version: $(tasks.maven-run-build-2.results.version)
-
+          value: $(tasks.maven-run-build-2.group-id) $(tasks.maven-run-build-2.artifact-id) $(tasks.maven-run-build-2.version)
 ---
 apiVersion: tekton.dev/v1
 kind: PipelineRun
@@ -89,5 +97,8 @@ spec:
     - name: maven-settings
       emptyDir: {}
     - name: shared-workspace
-      persistentVolumeClaim:
+      persistentvolumeclaim:
         claimName: maven-source-pvc
+    - name: maven-local-m2
+      persistentvolumeclaim:
+        claimName: maven-local-m2-pvc
