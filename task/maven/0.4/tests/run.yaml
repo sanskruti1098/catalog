@@ -23,7 +23,6 @@ spec:
   workspaces:
     - name: shared-workspace
     - name: maven-settings
-    - name: maven-local-m2
   tasks:
     - name: fetch-repository
       taskRef:
@@ -51,13 +50,13 @@ spec:
             - -DskipTests
             - clean
             - package
+        - name: SUBPATH
+          value: build1-cache
       workspaces:
         - name: maven-settings
           workspace: maven-settings
         - name: source
           workspace: shared-workspace
-        - name: maven-local-repo
-          workspace: maven-local-m2
     - name: maven-run-build-2
       taskRef:
         name: maven
@@ -71,13 +70,13 @@ spec:
             - -DskipTests
             - clean
             - package
+        - name: SUBPATH
+          value: build2-cache
       workspaces:
         - name: maven-settings
           workspace: maven-settings
         - name: source
           workspace: shared-workspace
-        - name: maven-local-repo
-          workspace: maven-local-m2
     - name: verify-mvn-results
       taskRef:
         name: test-mvn-results
@@ -103,6 +102,3 @@ spec:
     - name: shared-workspace
       persistentVolumeClaim:
         claimName: maven-source-pvc
-    - name: maven-local-m2
-      persistentVolumeClaim:
-        claimName: maven-local-m2-pvc
