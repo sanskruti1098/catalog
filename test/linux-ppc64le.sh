@@ -1,52 +1,62 @@
 #!/usr/bin/env bash
 
 # Copyright 2021 The Tekton Authors
-# Licensed under the Apache License, Version 2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-echo "🔧 Disabling Affinity Assistant (safe default)"
+echo "Patch to Disable Affinity Assistant (Needed to allow binding of two PVCs for Maven-0-3 test)"
 kubectl patch cm feature-flags -n tekton-pipelines -p '{"data":{"disable-affinity-assistant":"true"}}'
 
-echo "🔁 Restarting Tekton controller and webhook"
+# Restart Tekton pods so it picks up changes
+echo "Restarting pods"
 kubectl rollout restart deployment tekton-pipelines-controller -n tekton-pipelines
 kubectl rollout restart deployment tekton-pipelines-webhook -n tekton-pipelines
 
-echo "🕐 Waiting for pods to refresh..."
+echo "1 min please.... taking a nap ;)"
 sleep 60
-echo "✅ Tekton pods refreshed"
+echo "Refreshed.."
 
 kubectl get cm feature-flags -n tekton-pipelines -o yaml | grep disable-affinity-assistant
 
-# --- Arch-specific overrides ---
+# ppc64le specific registry
 export REGISTRY_IMAGE=ibmcom/registry:2.6.2.5
+# Maven image to use for ppc64le maven tasks
 export MAVEN_IMAGE=maven:3.6.3-adoptopenjdk-11
+# Architecture to use for golang tasks
 export GOARCH=ppc64le
+# Gradle image to use for ppc64le gradle tasks
 export BUILDER_IMAGE=gradle:5.6.2-jdk11
+# Tasks to skip so far for ppc64le
 export TEST_TASKRUN_IGNORES="helm-upgrade-from-repo helm-upgrade-from-source golang-test kaniko"
 
-# --- Optional: Patch registry deployments if present ---
-echo "🔄 Updating registry image for ppc64le"
-find task -name *registry*.yaml | xargs -I{} yq eval '(..|select(.kind?=="Deployment")|select(.metadata.name?=="registry")|.spec.template.spec.containers[0].image) |= env(REGISTRY_IMAGE)' -i {}
+echo "Add extra MAVEN_IMAGE parameter"
+find task/*maven*/*/tests/run.yaml | xargs -I{} yq eval '(..|select(.kind?=="Pipeline")|select(.metadata.name?=="jib-maven-test-pipeline"|"maven-test-pipeline")|.spec.tasks[1].params) |= . +{"name": "MAVEN_IMAGE","value": env(MAVEN_IMAGE)}' -i {}
 
-# --- Golang Task: Set GOARCH param ---
-echo "🛠️  Adding GOARCH param to golang tasks"
-find task/golang*/*/tests/run.yaml | xargs -I{} yq eval '(..|select(.kind?=="Pipeline")|.spec.tasks[].params) |= . + [{"name": "GOARCH", "value": env(GOARCH)}]' -i {}
+echo "Change registry image value"
+find task -name *registry*.yaml | xargs -I{} yq eval '(..|select(.kind?=="Deployment")|select(.metadata.name?=="registry")|.spec.template.spec.containers[0].image)|= env(REGISTRY_IMAGE)' -i {}
 
-# --- Gradle Task: Set GRADLE_IMAGE param ---
-echo "🛠️  Adding GRADLE_IMAGE param to gradle tasks"
-find task/gradle/*/tests/run.yaml | xargs -I{} yq eval '(..|select(.kind?=="Pipeline")|.spec.tasks[].params) |= . + [{"name": "GRADLE_IMAGE", "value": env(BUILDER_IMAGE)}]' -i {}
+echo "Change GOARCH parameter value"
+find task/golang*/*/tests/run.yaml | xargs -I{} yq eval '(..|select(.kind?=="Pipeline")|.spec.tasks[1].params) |= . +{"name": "GOARCH","value": env(GOARCH)}' -i {}
 
-# --- Jib Gradle Task: Set BUILDER_IMAGE param ---
-echo "🛠️  Adding BUILDER_IMAGE param to jib-gradle tasks"
-find task/jib-gradle/*/tests/run.yaml | xargs -I{} yq eval '(..|select(.kind?=="Pipeline")|.spec.tasks[].params) |= . + [{"name": "BUILDER_IMAGE", "value": env(BUILDER_IMAGE)}]' -i {}
+echo "Add extra GRADLE_IMAGE value"
+find task/gradle/*/tests/run.yaml | xargs -I{} yq eval '(..|select(.kind?=="Pipeline")|.spec.tasks[1].params) |= . +{"name": "GRADLE_IMAGE","value": env(BUILDER_IMAGE)}' -i {}
 
-# --- Maven Tasks: Inject SUBPATH & MAVEN_IMAGE ---
-echo "🛠️  Updating Maven tasks with SUBPATH and MAVEN_IMAGE (manual .m2 mount fix)"
-find task/*maven*/**/tests/run.yaml | xargs -I{} yq eval '
-  (.spec.tasks[] | select(.name | test("maven.*")) | .params) += 
-  [{"name": "MAVEN_IMAGE", "value": env(MAVEN_IMAGE)},
-   {"name": "SUBPATH", "value": "ppc64le"}]
-' -i {}
+echo "Add extra BUILDER_IMAGE parameter"
+find task/jib-gradle/*/tests/run.yaml | xargs -I{} yq eval '(..|select(.kind?=="Pipeline")|.spec.tasks[1].params) |= . +{"name": "BUILDER_IMAGE","value": env(BUILDER_IMAGE)}' -i {}
 
-# --- Enable Step Actions ---
-echo "🔓 Enabling step actions"
+echo "Add extra MAVEN_IMAGE parameter for maven-0-3 and maven-0-4 tests"
+yq eval '(..|select(.kind?=="Pipeline")|select(.metadata.name?=="jib-maven-test-pipeline"|"maven-test-pipeline")|.spec.tasks[2].params) |= . +{"name": "MAVEN_IMAGE","value": env(MAVEN_IMAGE)}' -i task/maven/0.3/tests/run.yaml
+yq eval '(..|select(.kind?=="Pipeline")|select(.metadata.name?=="jib-maven-test-pipeline"|"maven-test-pipeline")|.spec.tasks[2].params) |= . +{"name": "MAVEN_IMAGE","value": env(MAVEN_IMAGE)}' -i task/maven/0.4/tests/run.yaml
+
+echo "Patch to Enable Step Actions on the cluster"
 kubectl patch cm feature-flags -n tekton-pipelines -p '{"data":{"enable-step-actions":"true"}}'
