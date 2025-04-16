@@ -113,10 +113,10 @@ spec:
     - name: mvn-goals
       image: $(params.MAVEN_IMAGE)
       workingDir: $(workspaces.source.path)/$(params.CONTEXT_DIR)
-      command:
-        - mvn
+      command: ["/usr/bin/mvn"]
       args:
         - -s
         - $(workspaces.maven-settings.path)/settings.xml
         - -Dmaven.repo.local=$(workspaces.maven-local-repo.path)/.m2
-        - "$(params.GOALS[*])"
+        - $(params.GOALS[*])
+
