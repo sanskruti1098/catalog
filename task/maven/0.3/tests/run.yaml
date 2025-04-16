@@ -70,6 +70,9 @@ metadata:
 spec:
   pipelineRef:
     name: maven-test-pipeline
+  taskRunTemplate:
+    podTemplate:
+      affinity: null  # This disables any affinity assistant behavior
   workspaces:
     - name: maven-settings
       emptyDir: {}
