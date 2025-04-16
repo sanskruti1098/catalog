@@ -1,37 +1,25 @@
+---
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   name: maven
-  labels:
-    app.kubernetes.io/version: "0.4"
-  annotations:
-    tekton.dev/pipelines.minVersion: "0.50.0"
-    tekton.dev/categories: Build Tools
-    tekton.dev/tags: build-tool
-    tekton.dev/platforms: "linux/amd64,linux/s390x,linux/ppc64le"
 spec:
-  description: >-
-    This Task can be used to run a Maven build. It uses manual volume mounting for local repo.
+  description: Run a Maven build
   workspaces:
     - name: source
-      description: The workspace consisting of maven project.
     - name: maven-settings
-      description: The workspace consisting of the custom maven settings.
   params:
     - name: MAVEN_IMAGE
       type: string
-      description: Maven base image
       default: gcr.io/cloud-builders/mvn:3.9.6
     - name: GOALS
       type: array
-      default:
-        - package
+      default: ["package"]
     - name: CONTEXT_DIR
       type: string
       default: "."
     - name: SUBPATH
       type: string
-      description: Sub-directory in shared .m2 PVC
       default: "default"
   results:
     - name: group-id
@@ -58,3 +46,19 @@ spec:
     - name: m2-volume
       persistentVolumeClaim:
         claimName: maven-local-m2-pvc
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: test-mvn-results
+spec:
+  params:
+    - name: input
+      type: string
+  steps:
+    - name: show-results
+      image: registry.access.redhat.com/ubi8/ubi-minimal
+      script: |
+        #!/bin/bash
+        echo "Maven Task Results:"
+        echo "$(params.input)"
