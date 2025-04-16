@@ -112,7 +112,7 @@ function test_resources {
 }
 
 test_resources "${all_stepactions}"
-all_tests="task/maven/0.4/tests"
+all_tests="task/maven/0.3/tests"
 test_resources "${all_tests}"
 
 success
