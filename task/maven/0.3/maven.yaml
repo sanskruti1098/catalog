@@ -22,7 +22,7 @@ spec:
         provided by the user.
     - name: maven-local-repo
       description: Local repo (m2) workspace
-      optional: true
+      optional: false
   params:
     - name: MAVEN_IMAGE
       type: string
