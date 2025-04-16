@@ -24,7 +24,6 @@ spec:
     - name: shared-workspace
     - name: maven-settings
     - name: maven-local-m2
-    - name: maven-local-m2-alt
   tasks:
     - name: fetch-repository
       taskRef:
@@ -78,7 +77,7 @@ spec:
         - name: source
           workspace: shared-workspace
         - name: maven-local-repo
-          workspace: maven-local-m2-alt  # <== using different workspace name
+          workspace: maven-local-m2
     - name: verify-mvn-results
       taskRef:
         name: test-mvn-results
@@ -107,6 +106,3 @@ spec:
     - name: maven-local-m2
       persistentVolumeClaim:
         claimName: maven-local-m2-pvc
-    - name: maven-local-m2-alt
-      persistentVolumeClaim:
-        claimName: maven-local-m2-pvc-2
