@@ -27,6 +27,7 @@ sleep 60
 echo "Refreshed.."
 
 kubectl get cm feature-flags -n tekton-pipelines -o yaml | grep disable-affinity-assistant
+kubectl -n task-stepaction-ns apply -f task/helm-upgrade-from-source/0.4/helm-upgrade-from-source.yaml
 
 # ppc64le specific registry
 export REGISTRY_IMAGE=ibmcom/registry:2.6.2.5
